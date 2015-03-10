@@ -40,8 +40,8 @@ PROCEDURE_SECTION
 	//f = nobs*log(sd) + sum(square(epsilon))/(2.*sd*sd);
 	//f = sum(log(sd)) + sum(square(epsilon))/(2.*sd*sd);
 	ell = 0.5*log(sd)+log(2.*M_PI)+elem_div(square(epsilon),2.*square(sd));
-	//f   = sum(ell);
-	f = dnorm(epsilon,sd);
+	f   = sum(ell);
+	//f = dnorm(epsilon,sd);
 
 REPORT_SECTION
 	report<<"Linf\n"<<linf<<endl;
