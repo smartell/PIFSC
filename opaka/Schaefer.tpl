@@ -37,6 +37,8 @@ PARAMETER_SECTION
 	vector yt(1,nyrs);
 	vector epsilon(1,nyrs);
 
+	likeprof_number lp_r;
+
 PROCEDURE_SECTION
 
 	// MAIN ROUTINE
@@ -45,11 +47,15 @@ PROCEDURE_SECTION
 	observationModel();
 	calcObjectiveFunction();
 
+	//  Calculate the posterior densities for 
+	//   FMSY MSY and BMSY.
+
 FUNCTION initParameters
 	k     = exp(log_k);
 	r     = exp(log_r);
 	q     = exp(log_q);
 	sigma = exp(log_sigma);
+	lp_r  = r;
 
 FUNCTION productionModel
 	int i;
@@ -70,7 +76,7 @@ FUNCTION calcObjectiveFunction
 	prior.initialize();
 	
 	prior(1) = dlnorm(k,log(12),0.10);
-	prior(2) = dlnorm(r,log(0.2),0.05);
+	prior(2) = dlnorm(r,log(0.2),0.25);
 	prior(3) = -log(q);
 	prior(4) = dgamma(1.0/square(sigma),1.01,1.01);
 
@@ -93,3 +99,15 @@ REPORT_SECTION
 GLOBALS_SECTION
 	#undef REPORT 
 	#define REPORT(object) report<< #object "\n"<<object <<endl;
+
+	//#include "stats.cxx"
+
+
+
+
+
+
+
+
+
+
