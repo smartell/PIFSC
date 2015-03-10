@@ -8,7 +8,7 @@ DATA_SECTION
 	vector wt(1,nyrs);
 	LOC_CALCS
 		year = ivector(column(data,1));
-		ct   = column(data,2)/1e6;
+		ct   = column(data,2)/1.0e6;
 		cpue = column(data,3);
 		wt   = column(data,4);
 	END_CALCS
