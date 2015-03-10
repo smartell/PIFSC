@@ -15,8 +15,8 @@ DATA_SECTION
 PARAMETER_SECTION
 	init_number linf;
 	init_number k;
-	init_number to(1);
-	init_number log_cv(1);
+	init_number to(2);
+	init_number log_cv(2);
 
 	!! linf = max(len);
 	!! k    = 0.2;
@@ -28,6 +28,7 @@ PARAMETER_SECTION
 	vector lhat(1,nobs);  //pred len
 	vector epsilon(1,nobs);
 	vector sd(1,nobs);
+	vector ell(1,nobs);
 	sdreport_number sdla1;
 
 PROCEDURE_SECTION
@@ -36,7 +37,10 @@ PROCEDURE_SECTION
 	sdla1 = linf*(1.0-exp(-k*(1-to)));
 	epsilon = len-lhat;
 	
-
+	//f = nobs*log(sd) + sum(square(epsilon))/(2.*sd*sd);
+	//f = sum(log(sd)) + sum(square(epsilon))/(2.*sd*sd);
+	ell = 0.5*log(sd)+log(2.*M_PI)+elem_div(square(epsilon),2.*square(sd));
+	//f   = sum(ell);
 	f = dnorm(epsilon,sd);
 
 REPORT_SECTION
