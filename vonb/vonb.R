@@ -32,3 +32,7 @@ for(j in a)
 write(nobs,file="SimVonb.dat")
 write.table(data,file="SimVonb.dat",append=TRUE,row.names=FALSE,col.names=FALSE)
 write(999,file="SimVonb.dat",append=TRUE)
+
+
+
+
