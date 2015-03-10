@@ -31,8 +31,29 @@ PROCEDURE_SECTION
 
 
 REPORT_SECTION
+	report<<"Linf\n"<<linf<<endl;
+
+	REPORT(linf);
+
+
+  
+GLOBALS_SECTION
+	#undef REPORT
+	#define REPORT(object) report << #object "\n" << object << endl;
 
 
 
-  //system("say you model does not fit, ask Dave Fournier for help");
+
+
+
+
+
+
+
+
+
+
+
+
+
 
