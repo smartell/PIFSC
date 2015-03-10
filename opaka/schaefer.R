@@ -4,7 +4,7 @@ source("read.admb.R")
 A <- read.admb("schaefer")
 
 df <- data.frame(year=A$year,bt=A$bt,epsilon=A$epsilon,
-                 cpue=A$cpue,yt=A$yt)
+                 cpue=A$cpue,yt=A$yt,ut=A$ut)
 
 # plot biomass
 p <- ggplot(df,aes(year,bt)) + geom_line()
@@ -18,4 +18,8 @@ print(p)
 
 # plot residuals
 p <- ggplot(df,aes(year,epsilon)) + geom_point()
+print(p)
+
+# plot exploitation rate
+p <- ggplot(df,aes(year,ut)) + geom_line()
 print(p)

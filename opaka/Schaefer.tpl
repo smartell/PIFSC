@@ -14,8 +14,8 @@ DATA_SECTION
 	END_CALCS
 
 INITIALIZATION_SECTION
-	log_k     8.;
-	log_r     -4.5;
+	log_k     2.;
+	log_r     -2.5;
 	log_q     -5.;
 	log_sigma -4.6;
 
@@ -66,7 +66,15 @@ FUNCTION observationModel
 
 
 FUNCTION calcObjectiveFunction
-	f = dnorm(epsilon,sigma) + 1000.*fpen;
+	dvar_vector prior(1,4);
+	prior.initialize();
+	
+	prior(1) = dlnorm(k,log(12),0.10);
+	prior(2) = dlnorm(r,log(0.2),0.05);
+	prior(3) = -log(q);
+	prior(4) = dgamma(1.0/square(sigma),1.01,1.01);
+
+	f = dnorm(epsilon,sigma) + sum(prior) + 1000.*fpen;
 
 REPORT_SECTION
 	REPORT(k);
@@ -79,6 +87,8 @@ REPORT_SECTION
 	REPORT(cpue);
 	REPORT(year);
 	REPORT(epsilon);
+	dvector ut = value(elem_div(ct,bt));
+	REPORT(ut);
 
 GLOBALS_SECTION
 	#undef REPORT 
