@@ -6,20 +6,23 @@ DATA_SECTION
 	!! age = column(data,1);
 	!! len = column(data,2);
 	//!! cout<<data<<endl;
-
+	!! COUT(data);
 	// check to read all data.
 	init_int eof;
 	!! if(eof != 999){cout<<"Error reading data"<<endl; exit(1);}
 
+INITIALIZATION_SECTION
+	k 0.2;
+
 
 PARAMETER_SECTION
 	init_number linf;
-	init_number k;
-	init_number to(2);
-	init_number log_cv(2);
+	init_bounded_number k(0.,5.);
+	init_number to(1);
+	init_number log_cv(1);
 
+	//k    = 0.2;
 	!! linf = max(len);
-	!! k    = 0.2;
 	!! to = -0.5;
 	!! log_cv = log(0.1);
 
@@ -43,6 +46,10 @@ PROCEDURE_SECTION
 	    + elem_div(square(epsilon),2.*square(sd));
 	f   = sum(ell);
 	//f = dnorm(epsilon,sd);
+	
+	static int nf;
+	nf ++;
+	COUT(nf);
 
 REPORT_SECTION
 	report<<"Linf\n"<<linf<<endl;
@@ -55,7 +62,8 @@ GLOBALS_SECTION
 	#undef REPORT
 	#define REPORT(object) report << #object "\n" << object << endl;
 
-
+	#undef COUT
+	#define COUT(object)  cout << #object "\n" <<object<<endl;
 
 
 
