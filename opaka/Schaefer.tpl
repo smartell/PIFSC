@@ -8,13 +8,13 @@ DATA_SECTION
 	vector wt(1,nyrs);
 	LOC_CALCS
 		year = ivector(column(data,1));
-		ct   = column(data,2);
+		ct   = column(data,2)/1e6;
 		cpue = column(data,3);
 		wt   = column(data,4);
 	END_CALCS
 
 INITIALIZATION_SECTION
-	log_k     10.;
+	log_k     8.;
 	log_r     -4.5;
 	log_q     -5.;
 	log_sigma -4.6;
@@ -73,6 +73,12 @@ REPORT_SECTION
 	REPORT(r);
 	REPORT(q);
 	REPORT(sigma);
+	REPORT(bt);
+	REPORT(yt);
+	REPORT(ct);
+	REPORT(cpue);
+	REPORT(year);
+	REPORT(epsilon);
 
 GLOBALS_SECTION
 	#undef REPORT 
