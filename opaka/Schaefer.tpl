@@ -12,19 +12,20 @@ DATA_SECTION
 		cpue = column(data,3);
 		wt   = column(data,4);
 	END_CALCS
+	!!CLASS ofstream ofs("MCMC.rep",ios::app);
 
 INITIALIZATION_SECTION
-	log_k     2.;
-	log_r     -2.5;
-	log_q     -5.;
-	log_sigma -4.6;
+	log_k     3.269017;
+	log_r     -1.0;
+	log_q     -11.;
+	log_sigma -4.;
 
 
 PARAMETER_SECTION
 	init_number log_k;
 	init_number log_r;
 	init_number log_q;
-	init_number log_sigma;
+	init_number log_sigma(2);
 
 	objective_function_value f;
 	
@@ -48,7 +49,29 @@ PROCEDURE_SECTION
 	calcObjectiveFunction();
 
 	//  Calculate the posterior densities for 
-	//   FMSY MSY and BMSY.
+	//   FMSY MSY and BMSY.  USING any method.
+	if(mceval_phase())
+	{
+		calcStatusReferencePoints();
+	}
+
+FUNCTION calcStatusReferencePoints
+	static long nf=0;
+	nf++;
+	double bmsy = 0.5 * value(k);
+	double fmsy = 0.5 * value(r);
+	double  msy = fmsy * bmsy;
+	double bend = value(bt(nyrs))/bmsy;
+
+	if(nf==1)
+	{
+		ofstream fff("MCMC.rep");
+		fff<<"Bmsy\t"<<"Fmsy\t"<<"MSY\t"<<"P(Bt<Bmsy)\t"<<endl;
+	}
+	//ofstream ofs("MCMC.rep",ios::app);
+	ofs<<bmsy<<"\t"<<fmsy<<"\t"<<msy<<"\t"<<bend<<endl;
+
+
 
 FUNCTION initParameters
 	k     = exp(log_k);
@@ -75,12 +98,12 @@ FUNCTION calcObjectiveFunction
 	dvar_vector prior(1,4);
 	prior.initialize();
 	
-	prior(1) = dlnorm(k,log(12),0.10);
-	prior(2) = dlnorm(r,log(0.2),0.25);
+	prior(1) = dlnorm(k,log(3.269017),0.10);
+	prior(2) = dlnorm(r,log(0.2),0.05);
 	prior(3) = -log(q);
 	prior(4) = dgamma(1.0/square(sigma),1.01,1.01);
 
-	f = dnorm(epsilon,sigma) + sum(prior) + 1000.*fpen;
+	f = dnorm(epsilon,sigma) + sum(prior) + fpen;
 
 REPORT_SECTION
 	REPORT(k);
@@ -101,7 +124,7 @@ GLOBALS_SECTION
 	#define REPORT(object) report<< #object "\n"<<object <<endl;
 
 	//#include "stats.cxx"
-
+	
 
 
 
