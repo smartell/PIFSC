@@ -63,10 +63,11 @@ FUNCTION calcStatusReferencePoints
 	double bmsy = 0.5 * value(k);
 	double fmsy = 0.5 * value(r);
 	double  msy = fmsy * bmsy;
-	double bend = value(bt(nyrs))/bmsy;
-
+	double bend = value(bt(nyrs));
+	bend = (bend-bmsy)/bmsy;
 	if(nf==1)
 	{
+		ofstream eee("MCBT.rep");
 		ofstream fff("MCMC.rep");
 		fff<<"Bmsy\t"<<"Fmsy\t"<<"MSY\t"<<"P(Bt<Bmsy)\t"<<endl;
 	}

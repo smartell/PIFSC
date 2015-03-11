@@ -23,3 +23,16 @@ print(p)
 # plot exploitation rate
 p <- ggplot(df,aes(year,ut)) + geom_line()
 print(p)
+
+
+# plot posteriors
+mdf <- melt(M)
+p <- ggplot(mdf,aes(value)) + geom_histogram()
+p <- p + facet_wrap(~variable,scales="free")
+print(p)
+
+
+
+# ecdf 
+p<-ggplot(M,aes(P.Bt.Bmsy.)) + stat_ecdf()
+print(p)
