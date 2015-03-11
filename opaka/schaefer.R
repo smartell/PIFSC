@@ -1,5 +1,5 @@
 require(ggplot2)
-
+M <- read.table("MCMC.rep",header=TRUE)
 source("read.admb.R")
 A <- read.admb("schaefer")
 

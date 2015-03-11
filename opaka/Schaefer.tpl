@@ -6,6 +6,7 @@ DATA_SECTION
 	vector ct(1,nyrs);
 	vector cpue(1,nyrs);
 	vector wt(1,nyrs);
+	vector mcmcBmsy(1,10000);
 	LOC_CALCS
 		year = ivector(column(data,1));
 		ct   = column(data,2)/1.0e6;
@@ -13,6 +14,7 @@ DATA_SECTION
 		wt   = column(data,4);
 	END_CALCS
 	!!CLASS ofstream ofs("MCMC.rep",ios::app);
+	!!CLASS ofstream ofs2("MCBT.rep",ios::app);
 
 INITIALIZATION_SECTION
 	log_k     3.269017;
@@ -71,7 +73,7 @@ FUNCTION calcStatusReferencePoints
 	//ofstream ofs("MCMC.rep",ios::app);
 	ofs<<bmsy<<"\t"<<fmsy<<"\t"<<msy<<"\t"<<bend<<endl;
 
-
+	ofs2<<bt<<endl;
 
 FUNCTION initParameters
 	k     = exp(log_k);
