@@ -12,13 +12,23 @@ DATA_SECTION
 	vector ct(1,nyrs);
 	vector cpue(1,nyrs);
 	vector wt(1,nyrs);
-	vector mcmcBmsy(1,10000);
+	
 	LOC_CALCS
 		year = ivector(column(data,1));
 		ct   = column(data,2)/1.0e6;
 		cpue = column(data,3);
 		wt   = column(data,4);
 	END_CALCS
+
+INITIALIZATION_SECTION
+	log_bo   3.65;
+	log_reck 2.48;
+	log_m   -1.60;
+	log_sigma_epsilon  -1.60;
+	log_sigma_nu       -1.60;
+	log_fbar           -1.60;
+
+
 
 PARAMETER_SECTION
 	init_number log_bo;
@@ -48,7 +58,9 @@ PARAMETER_SECTION
 	vector nt(1,nyrs);
 	vector rt(1,nyrs);
 	vector what(1,nyrs);
+	vector chat(1,nyrs);
 	vector nu(1,nyrs);
+	vector delta(1,nyrs);
 	vector epsilon(1,nyrs);
 
 PROCEDURE_SECTION
@@ -106,25 +118,44 @@ FUNCTION observationModels
 	dvar_vector zt = log(cpue) - log(bt);
 	lnq = mean(zt);
 	epsilon = zt - lnq;
-
 	// COUT(epsilon(1,5));
 	// COUT(log(cpue(1,5))-lnq+log(bt(1,5)));
 
+
+	// predicted catch
+	chat  = elem_prod(ft,bt);
+	delta = log(ct) - log(chat); 
+
 FUNCTION calcObjectiveFunction
-	dvar_vector lvec(1,2);
+	dvar_vector lvec(1,3);
 	sigma_nu      = mfexp(log_sigma_nu);
 	sigma_epsilon = mfexp(log_sigma_epsilon);
 
 	lvec(1) = dnorm(nu,sigma_nu);
 	lvec(2) = dnorm(epsilon,sigma_epsilon);
-
+	lvec(3) = dnorm(delta,0.2);
 	f = sum(lvec);
 
 
 REPORT_SECTION
+	REPORT(bo);
+	REPORT(reck);
+	REPORT(m);
+	REPORT(ro);
+	REPORT(no);
+	REPORT(year);
+	REPORT(bt);
+	REPORT(nt);
+	REPORT(rt);
+	REPORT(epsilon);
+	REPORT(nu);
+	REPORT(delta);
+
 
 
 GLOBALS_SECTION
 	#undef COUT
 	#define COUT(object) cout<<#object "\n"<<object<<endl;
+	#undef REPORT
+	#define REPORT(object) report<<#object "\n"<<object<<endl;
 
