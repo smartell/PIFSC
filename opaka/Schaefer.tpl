@@ -33,7 +33,7 @@ PARAMETER_SECTION
 	init_number log_tau(2);
 	
 	init_bounded_dev_vector nu(1,nyrs,-5,5,2);
-
+	// random_effects_vector nu(1,nyrs,2);
 
 	objective_function_value f;
 	
