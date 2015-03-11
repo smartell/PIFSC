@@ -24,7 +24,8 @@ PARAMETER_SECTION
 	init_number log_bo;
 	init_number log_reck;
 	init_number log_m;
-	init_number log_sigma;
+	init_number log_sigma_epsilon;
+	init_number log_sigma_nu;
 	init_number log_fbar;
 	init_bounded_dev_vector fdev(1,nyrs,-5,5);
 
@@ -34,22 +35,29 @@ PARAMETER_SECTION
 	number no;
 	number reck;
 	number m;
-	number sigma;
+	number sigma_epsilon;
+	number sigma_nu;
 
 	number so;
 	number beta;
+	number lnq;
 
 	vector ft(1,nyrs);
 	vector st(1,nyrs);
 	vector bt(1,nyrs);
 	vector nt(1,nyrs);
 	vector rt(1,nyrs);
+	vector what(1,nyrs);
+	vector nu(1,nyrs);
+	vector epsilon(1,nyrs);
 
 PROCEDURE_SECTION
 
 	initialStates();
 	calcFishingMortality();
 	populationDynamics();
+	observationModels();
+	calcObjectiveFunction();
 
 
 
@@ -67,7 +75,7 @@ FUNCTION initialStates
 	beta = (reck-1.)/bo;
 
 FUNCTION calcFishingMortality
-	ft = 0*mfexp(log_fbar + fdev);
+	ft = mfexp(log_fbar + fdev);
 
 FUNCTION populationDynamics
 	// add option for starting off an fished state.
@@ -87,7 +95,31 @@ FUNCTION populationDynamics
 			rt(i+agek) = so*bt(i)/(1.+beta*bt(i));
 		}
 	}
-	COUT(bt);
+	// COUT(bt);
+
+FUNCTION observationModels
+	// average weight.
+	what = elem_div(bt,nt);
+	nu = wt - what;
+
+	// cpue
+	dvar_vector zt = log(cpue) - log(bt);
+	lnq = mean(zt);
+	epsilon = zt - lnq;
+
+	// COUT(epsilon(1,5));
+	// COUT(log(cpue(1,5))-lnq+log(bt(1,5)));
+
+FUNCTION calcObjectiveFunction
+	dvar_vector lvec(1,2);
+	sigma_nu      = mfexp(log_sigma_nu);
+	sigma_epsilon = mfexp(log_sigma_epsilon);
+
+	lvec(1) = dnorm(nu,sigma_nu);
+	lvec(2) = dnorm(epsilon,sigma_epsilon);
+
+	f = sum(lvec);
+
 
 REPORT_SECTION
 
