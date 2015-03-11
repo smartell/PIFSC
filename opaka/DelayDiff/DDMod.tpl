@@ -1,5 +1,11 @@
 DATA_SECTION
 	init_int nyrs;
+	init_number alpha;
+	init_number rho;
+	init_number wk;
+	init_int agek;
+
+
 	init_matrix data(1,nyrs,1,4);
 	//!! cout<<data<<endl;
 	ivector year(1,nyrs);
@@ -22,14 +28,71 @@ PARAMETER_SECTION
 	init_number log_fbar;
 	init_bounded_dev_vector fdev(1,nyrs,-5,5);
 
+	objective_function_value f;
+	number bo;
+	number ro;
+	number no;
+	number reck;
+	number m;
+	number sigma;
+
+	number so;
+	number beta;
+
+	vector ft(1,nyrs);
+	vector st(1,nyrs);
+	vector bt(1,nyrs);
+	vector nt(1,nyrs);
+	vector rt(1,nyrs);
 
 PROCEDURE_SECTION
 
+	initialStates();
+	calcFishingMortality();
+	populationDynamics();
 
 
+
+FUNCTION initialStates
+	bo   = mfexp(log_bo);
+	reck = mfexp(log_reck) + 1.0;
+	m    = mfexp(log_m);
+
+
+	dvariable s    = exp(-m);
+	dvariable wbar = (s*alpha+wk*(1.-s))/(1-rho*s);
+	no   = bo/wbar;
+	ro   = no*(1.-s);
+	so   = reck*ro/bo;
+	beta = (reck-1.)/bo;
+
+FUNCTION calcFishingMortality
+	ft = 0*mfexp(log_fbar + fdev);
+
+FUNCTION populationDynamics
+	// add option for starting off an fished state.
+
+	bt(1) = bo;
+	nt(1) = no;
+	rt(1,agek) = ro;
+
+	int i;
+	for( i = 1; i < nyrs; i++ )
+	{
+		st(i)   = exp(-m-ft(i));
+		bt(i+1) = st(i)*(alpha*nt(i)+rho*bt(i)) + wk * rt(i);
+		nt(i+1) = st(i)*nt(i) + rt(i);
+		if(i+agek <= nyrs)
+		{
+			rt(i+agek) = so*bt(i)/(1.+beta*bt(i));
+		}
+	}
+	COUT(bt);
 
 REPORT_SECTION
 
 
-
+GLOBALS_SECTION
+	#undef COUT
+	#define COUT(object) cout<<#object "\n"<<object<<endl;
 
