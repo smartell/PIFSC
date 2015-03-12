@@ -31,7 +31,7 @@ INITIALIZATION_SECTION
 	log_reck 2.48;
 	log_m   -1.60;
 	log_sigma_epsilon  -1.60;
-	log_sigma_nu       -2.30;
+	log_sigma_nu       -2.20;
 	log_fbar           -1.60;
 	
 
