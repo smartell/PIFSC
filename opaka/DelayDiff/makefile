@@ -1,5 +1,5 @@
 EXEC=DDmod
-DATA=
+DATA=DDmod.dat
 #RSCRIP FOR AUTMATING GRAPHS
 RSCRIPT='source(file.path("DDmod.R"))'
 
@@ -21,3 +21,6 @@ clean:
 plots: $(EXEC).rep
 	-@echo $(RSCRIPT) | R --vanilla --slave
 
+# target: help - Display callable targets.
+help:
+	egrep "^# target:" [Mm]akefile
