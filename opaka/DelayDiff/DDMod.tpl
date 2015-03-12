@@ -106,35 +106,50 @@ PROCEDURE_SECTION
 
 
 FUNCTION runSimulationModel
+	/**
+	This simulation model is based on the same routines used 
+	in the assessment model.  
+
+	Pseudocode:
+		- fill vectors with random normal deviates.
+		- call functions to calculate predicted observations
+		- add random error to the simulated observations
+		- continue with running the assessment and estimate
+		  model parameters.
+		- write estimated parameters to a file for comparison
+		  with the true values (pin file) that were used to 
+		  simulate the model data.
+
+
+
+	*/
+	
+	// Random number generator class
 	random_number_generator rng(rseed);
 
+	// vectors for random numbers must be data types, not dvar_...
 	dvector repsilon(1,nyrs);
 	dvector rnu(1,nyrs);
 	dvector rdelta(1,nyrs);
 
+	// fill with random normal deviates, mean =0, sd = 1
 	repsilon.fill_randn(rng);
 	rnu.fill_randn(rng);
 	rdelta.fill_randn(rng);
 
 	//COUT(repsilon);
 
+	// call functions to simulate data.
 	initialStates();
 	calcFishingMortality();
 	populationDynamics();
 	observationModels();
 
-
+	// overwrite existing data with simulated values.
 	ct   = value(elem_prod( chat,exp(0.05*rdelta) )) ;
 	cpue = value(elem_prod( exp(lnq)*bt,exp(sigma_epsilon*repsilon) ));
 	wt   = value(what+sigma_nu*rnu);
 	
-	//COUT(sigma_epsilon);
-	//COUT(sigma_nu);
-
-	
-
-
-	//COUT(bt);
 	
 
 

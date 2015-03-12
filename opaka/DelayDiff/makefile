@@ -16,7 +16,7 @@ mcmc:
 	./$(EXEC) -ind $(DATA) -mceval
 
 clean:
-	rm $(EXEC) $(EXEC).[bcehlmprs]* sims variance admodel.* fmin.log
+	rm $(EXEC) $(EXEC).[bcehlmrs]* sims variance admodel.* fmin.log
 
 plots: $(EXEC).rep
 	-@echo $(RSCRIPT) | R --vanilla --slave
