@@ -282,6 +282,13 @@ REPORT_SECTION
 	REPORT(ct);
 	REPORT(chat);
 
+	if ( rseed != 0 && last_phase() )
+	{
+		ofstream ofs("SimPars.rep",ios::app);
+		adstring tt = "\t";
+		ofs<<rseed<<tt<<bo<<tt<<reck<<tt<<m<<tt<<sigma_epsilon<<tt<<sigma_nu<<endl;
+	}
+
 
 
 GLOBALS_SECTION

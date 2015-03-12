@@ -1,5 +1,6 @@
 EXEC=DDmod
 DATA=DDmod.dat
+ARGS=
 #RSCRIP FOR AUTMATING GRAPHS
 RSCRIPT='source(file.path("DDmod.R"))'
 
@@ -9,7 +10,7 @@ $(EXEC): $(EXEC).tpl
 	admb $(EXEC).tpl
 
 run: $(EXEC).cpp
-	./$(EXEC) -ind $(DATA)
+	./$(EXEC) -ind $(DATA) $(ARGS)
 
 mcmc: 
 	./$(EXEC) -ind $(DATA) -mcmc -mcsave 100
