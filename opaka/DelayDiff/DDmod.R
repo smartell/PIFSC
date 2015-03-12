@@ -1,5 +1,6 @@
 library(ggplot2)
 library(plyr)
+library(reshape)
 
 source("read.admb.R")
 A <- read.admb("DDmod")

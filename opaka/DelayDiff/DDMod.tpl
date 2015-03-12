@@ -27,7 +27,7 @@ DATA_SECTION
 	END_CALCS
 
 INITIALIZATION_SECTION
-	log_bo   3.65;
+	log_bo   30.65;
 	log_reck 2.48;
 	log_m   -1.60;
 	log_sigma_epsilon  -1.60;
@@ -42,7 +42,7 @@ PARAMETER_SECTION
 	init_number log_m;
 	init_number log_sigma_epsilon(2);
 	init_number log_sigma_nu(-2);
-	init_number log_fbar;
+	init_number log_fbar(3);
 	//init_number log_wk;
 	init_bounded_dev_vector fdev(1,nyrs,-5,5);
 
@@ -103,7 +103,7 @@ FUNCTION calcFishingMortality
 
 FUNCTION populationDynamics
 	// add option for starting off an fished state.
-	double foo,bar;
+	
 	bt(1) = bo;
 	nt(1) = no;
 	rt(1,agek) = ro;
@@ -162,6 +162,16 @@ FUNCTION calcObjectiveFunction
 	lvec(2) = dnorm(epsilon,sigma_epsilon);
 	lvec(3) = dnorm(delta,0.2);
 	f = sum(lvec) + sum(prior_vec);
+
+	dvariable avgF = mean(ft);
+	if( last_phase() )
+	{
+		f+= 0.001*square(log(avgF/0.2));
+	}
+	else
+	{
+		f+= 1000.0*square(log(avgF/0.2));
+	}
 
 	//dvariable x = 1;
 	//dvariable mu = 0;
