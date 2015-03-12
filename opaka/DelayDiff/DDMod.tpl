@@ -213,6 +213,8 @@ REPORT_SECTION
 
 
 GLOBALS_SECTION
+	//#include "stats.cxx"
+
 	#undef COUT
 	#define COUT(object) cout<<#object "\n"<<object<<endl;
 	#undef REPORT
