@@ -1,4 +1,10 @@
 DATA_SECTION
+	init_adstring datafile;
+	!!COUT(datafile);
+	!! ad_comm::change_datafile_name(datafile);
+
+
+
 	int rseed;
 	LOC_CALCS
 		// Command line options.
@@ -85,7 +91,7 @@ PRELIMINARY_CALCS_SECTION
 	{
 		cout<<"Simulating fake data with random seed "<<rseed<<endl;
 		runSimulationModel();
-		exit(1);
+		//exit(1);
 	}
 
 
@@ -110,7 +116,7 @@ FUNCTION runSimulationModel
 	rnu.fill_randn(rng);
 	rdelta.fill_randn(rng);
 
-	COUT(repsilon);
+	//COUT(repsilon);
 
 	initialStates();
 	calcFishingMortality();
@@ -122,8 +128,8 @@ FUNCTION runSimulationModel
 	cpue = value(elem_prod( exp(lnq)*bt,exp(sigma_epsilon*repsilon) ));
 	wt   = value(what+sigma_nu*rnu);
 	
-	COUT(sigma_epsilon);
-	COUT(sigma_nu);
+	//COUT(sigma_epsilon);
+	//COUT(sigma_nu);
 
 	
 

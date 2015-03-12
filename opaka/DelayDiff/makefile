@@ -1,5 +1,5 @@
 EXEC=DDmod
-DATA=Opaka.dat
+DATA=
 #RSCRIP FOR AUTMATING GRAPHS
 RSCRIPT='source(file.path("DDmod.R"))'
 
