@@ -1,7 +1,14 @@
 DATA_SECTION
-
-	// Command line options.
-	//if((on=option_match(ad_comm::argc,ad_comm::argv,"-sim",opt))>-1)
+	int rseed;
+	LOC_CALCS
+		// Command line options.
+		rseed = 0;
+		int on,opt;
+		if((on=option_match(ad_comm::argc,ad_comm::argv,"-sim",opt))>-1)
+		{
+			rseed = atoi(ad_comm::argv[on+1]);
+		}
+	END_CALCS
 
 
 
@@ -27,7 +34,7 @@ DATA_SECTION
 	END_CALCS
 
 INITIALIZATION_SECTION
-	log_bo   30.65;
+	log_bo   3.65;
 	log_reck 2.48;
 	log_m   -1.60;
 	log_sigma_epsilon  -1.60;
@@ -73,6 +80,15 @@ PARAMETER_SECTION
 
 	vector prior_vec(1,4);
 
+PRELIMINARY_CALCS_SECTION
+	if(rseed != 0)
+	{
+		cout<<"Simulating fake data with random seed "<<rseed<<endl;
+		runSimulationModel();
+		exit(1);
+	}
+
+
 PROCEDURE_SECTION
 
 	initialStates();
@@ -83,11 +99,47 @@ PROCEDURE_SECTION
 	calcObjectiveFunction();
 
 
+FUNCTION runSimulationModel
+	random_number_generator rng(rseed);
+
+	dvector repsilon(1,nyrs);
+	dvector rnu(1,nyrs);
+	dvector rdelta(1,nyrs);
+
+	repsilon.fill_randn(rng);
+	rnu.fill_randn(rng);
+	rdelta.fill_randn(rng);
+
+	COUT(repsilon);
+
+	initialStates();
+	calcFishingMortality();
+	populationDynamics();
+	observationModels();
+
+
+	ct   = value(elem_prod( chat,exp(0.05*rdelta) )) ;
+	cpue = value(elem_prod( exp(lnq)*bt,exp(sigma_epsilon*repsilon) ));
+	wt   = value(what+sigma_nu*rnu);
+	
+	COUT(sigma_epsilon);
+	COUT(sigma_nu);
+
+	
+
+
+	//COUT(bt);
+	
+
+
+
 
 FUNCTION initialStates
 	bo   = mfexp(log_bo);
 	reck = mfexp(log_reck) + 1.0;
 	m    = mfexp(log_m);
+	sigma_nu      = mfexp(log_sigma_nu);
+	sigma_epsilon = mfexp(log_sigma_epsilon);
 	//wk   = mfexp(log_wk);
 
 	dvariable s    = exp(-m);
@@ -155,8 +207,7 @@ FUNCTION calculatePriors
 
 FUNCTION calcObjectiveFunction
 	dvar_vector lvec(1,3);
-	sigma_nu      = mfexp(log_sigma_nu);
-	sigma_epsilon = mfexp(log_sigma_epsilon);
+	
 
 	lvec(1) = dnorm(nu,sigma_nu);
 	lvec(2) = dnorm(epsilon,sigma_epsilon);
