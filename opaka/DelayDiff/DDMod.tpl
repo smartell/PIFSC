@@ -30,20 +30,24 @@ INITIALIZATION_SECTION
 	log_bo   30.65;
 	log_reck 2.48;
 	log_m   -1.60;
-	log_sigma_epsilon  -1.60;
-	log_sigma_nu       -2.30;
+	log_sigma_epsilon   1.60;
+	log_sigma_nu        2.40;
+	log_sigma_delta     3.00;
 	log_fbar           -1.60;
+	log_tau            -1.60;
 	
 
 
 PARAMETER_SECTION
-	init_number log_bo;
-	init_number log_reck;
-	init_number log_m;
-	init_number log_sigma_epsilon(2);
-	init_number log_sigma_nu(-2);
-	init_number log_fbar(3);
-	//init_number log_wk;
+	init_number log_bo(1);
+	init_number log_reck(2);
+	init_number log_m(1);
+	init_number log_sigma_epsilon(3);
+	init_number log_sigma_nu(-3);
+	init_number log_sigma_delta(3);
+	init_number log_tau(4);
+	init_number log_fbar(1);
+	init_bounded_dev_vector psi(1,nyrs,-5,5,3);
 	init_bounded_dev_vector fdev(1,nyrs,-5,5);
 
 	objective_function_value f;
@@ -55,6 +59,8 @@ PARAMETER_SECTION
 	number m;
 	number sigma_epsilon;
 	number sigma_nu;
+	number sigma_delta;
+	number tau;
 
 	number so;
 	number beta;
@@ -71,8 +77,9 @@ PARAMETER_SECTION
 	vector delta(1,nyrs);
 	vector epsilon(1,nyrs);
 
-	vector prior_vec(1,4);
+	vector prior_vec(1,7);
 
+	sdreport_number sd_bterm;
 PROCEDURE_SECTION
 
 	initialStates();
@@ -88,7 +95,7 @@ FUNCTION initialStates
 	bo   = mfexp(log_bo);
 	reck = mfexp(log_reck) + 1.0;
 	m    = mfexp(log_m);
-	//wk   = mfexp(log_wk);
+	
 
 	dvariable s    = exp(-m);
 	dvariable wbar = (s*alpha+wk*(1.-s))/(1-rho*s);
@@ -106,7 +113,7 @@ FUNCTION populationDynamics
 	
 	bt(1) = bo;
 	nt(1) = no;
-	rt(1,agek) = ro;
+	rt(1,agek) = ro *exp(psi(1,agek));
 
 	int i;
 	for( i = 1; i < nyrs; i++ )
@@ -117,9 +124,10 @@ FUNCTION populationDynamics
 		nt(i+1) = st(i)*nt(i) + rt(i);
 		if(i+agek <= nyrs)
 		{
-			rt(i+agek) = so*bt(i)/(1.+beta*bt(i));
+			rt(i+agek) = so*bt(i)/(1.+beta*bt(i))*exp(psi(i));
 		}
 	}
+	sd_bterm = bt(nyrs);
 	// COUT(bt);
 
 FUNCTION observationModels
@@ -146,21 +154,32 @@ FUNCTION observationModels
 FUNCTION calculatePriors
 	prior_vec.initialize();
 
+	sigma_nu      = 1.0 / mfexp(log_sigma_nu);
+	sigma_epsilon = 1.0 / mfexp(log_sigma_epsilon);
+	sigma_delta   = 1.0 / mfexp(log_sigma_delta);
+	tau           = 1.0 / mfexp(log_tau);
+
 	prior_vec(1) = dlnorm(bo,3.65,0.2);
 	dvariable h  = reck/(4.+reck);
 	prior_vec(2) = dbeta((h-0.2)/0.8,3.0,2.0);
 	prior_vec(3) = dlnorm(m,log(0.2),0.05);
 
+	prior_vec(4) = dgamma(1.0/square(sigma_nu),30.,1.0);
+	prior_vec(5) = dgamma(1.0/square(sigma_epsilon),25.,1.0);
+	prior_vec(6) = dgamma(1.0/square(sigma_delta),30.,1.0);
+	prior_vec(7) = dgamma(1.0/square(tau),20.0,1.0);
 
+	//COUT(dgamma(25,1.01,1.01));
+	//exit(1);
 
 FUNCTION calcObjectiveFunction
-	dvar_vector lvec(1,3);
-	sigma_nu      = mfexp(log_sigma_nu);
-	sigma_epsilon = mfexp(log_sigma_epsilon);
+	dvar_vector lvec(1,4);
+	
 
 	lvec(1) = dnorm(nu,sigma_nu);
 	lvec(2) = dnorm(epsilon,sigma_epsilon);
-	lvec(3) = dnorm(delta,0.2);
+	lvec(3) = dnorm(delta,sigma_delta);
+	lvec(4) = dnorm(psi,tau);
 	f = sum(lvec) + sum(prior_vec);
 
 	dvariable avgF = mean(ft);
@@ -189,10 +208,15 @@ FUNCTION calcObjectiveFunction
 REPORT_SECTION
 	REPORT(bo);
 	REPORT(reck);
+	double h = value(reck/(4+reck));
+	REPORT(h);
 	REPORT(m);
 	REPORT(wk);
 	REPORT(ro);
 	REPORT(no);
+	REPORT(sigma_epsilon);
+	REPORT(sigma_nu);
+	REPORT(sigma_delta);
 	REPORT(year);
 	REPORT(bt);
 	REPORT(nt);
@@ -209,7 +233,7 @@ REPORT_SECTION
 	REPORT(yt);
 	REPORT(ct);
 	REPORT(chat);
-
+	REPORT(psi);
 
 
 GLOBALS_SECTION

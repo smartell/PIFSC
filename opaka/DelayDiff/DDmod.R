@@ -1,5 +1,5 @@
 library(ggplot2)
-library(plyr)
+library(dplyr)
 library(reshape)
 
 source("read.admb.R")
@@ -18,7 +18,8 @@ df <- data.frame(year=A$year,
                  ft = A$ft,
                  fdev = A$fdev,
                  cpue = A$cpue,
-                 yt = A$yt)
+                 yt = A$yt,
+                 psi = A$psi)
 
 p <- ggplot(df,aes(year,bt)) + geom_line()
 p <- p + labs(x="Year",y="Biomass (Mlb)")
@@ -35,7 +36,7 @@ p <- p + labs(x="Year",y="Average Weight (lb)")
 print(p + theme_bw())
 
 mdf <- melt(df,id.var="year")
-ssdf <- mdf %>% subset(variable %in% c("epsilon","nu","delta","fdev"))
+ssdf <- mdf %>% subset(variable %in% c("epsilon","nu","delta","psi"))
 p <- ggplot(ssdf,aes(year,value)) + geom_point() 
 p <- p + facet_wrap(~variable)
 print(p + theme_bw())
