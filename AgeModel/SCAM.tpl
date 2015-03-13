@@ -537,12 +537,35 @@ GLOBALS_SECTION
 
 	#include <admodel.h>
 	#include <time.h>
-	#include <stats.cxx>
+	//#include <stats.cxx>
 	#include <baranov.cxx>
 	time_t start,finish;
 	long hour,minute,second;
 	double elapsed_time;
 	
+	dvariable plogis(const dvariable& x, const double& mu, const dvariable& std)
+	{
+		return 1./(1.+mfexp((mu-x)/std));
+	}
+
+	dvar_vector plogis(const dvector& x, const dvariable& mu, const dvariable& std)
+	{
+		return 1./(1.+mfexp((mu-x)/std));
+	}
+
+	dvector plogis(const dvector& x, const double& mu, const double& std)
+	{
+		return 1./(1.+mfexp((mu-x)/std));
+	}
+
+	dvar_vector plogis(const dvar_vector& x, const dvariable& mu, const dvariable& std)
+	{
+		return 1./(1.+mfexp((mu-x)/std));
+	}
+
+
+
+
 FINAL_SECTION
 	time(&finish);
 	elapsed_time=difftime(finish,start);
