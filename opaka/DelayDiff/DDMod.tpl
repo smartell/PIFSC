@@ -225,7 +225,7 @@ FUNCTION populationDynamics
 			rt(i+agek) = so*bt(i)/(1.+beta*bt(i)) * exp(psi(i));
 		}
 	}
-	sd_bterm = bt(nyrs);
+	//sd_bterm = bt(nyrs);
 	// COUT(bt);
 
 FUNCTION observationModels
