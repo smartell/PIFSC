@@ -6,8 +6,8 @@
 
 OperatingModel::~OperatingModel(){}
 
-OperatingModel::OperatingModel(mseVariables _mv,int argc,char * argv[])
-: model_data(argc,argv), m_mv(_mv)
+OperatingModel::OperatingModel(mseData _md, mseVariables _mv,int argc,char * argv[])
+: model_data(argc,argv), m_mv(_mv), m_md(_md)
 {
 	pyrs = m_mv.pyrs;
 	bo   = m_mv.bo;
@@ -16,6 +16,22 @@ OperatingModel::OperatingModel(mseVariables _mv,int argc,char * argv[])
 	psi  = m_mv.psi;
 	ft   = m_mv.ft;
 	lnq  = m_mv.lnq;
+
+	// unpackage the model data struct into variables.
+	// some kludge to get things working.
+	nyrs  = m_md.nyrs;
+	alpha = m_md.alpha;
+	rho   = m_md.rho;
+	wk    = m_md.wk;
+	agek  = m_md.agek;
+
+	year  = m_md.year;
+	ct    = m_md.ct; 
+	cpue  = m_md.cpue;
+	wt    = m_md.wt;
+
+
+
 
 	bt.allocate(1,nyrs+pyrs);
 	nt.allocate(1,nyrs+pyrs);

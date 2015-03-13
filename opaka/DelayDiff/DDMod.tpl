@@ -48,7 +48,7 @@ DATA_SECTION
 	END_CALCS
 	
 	// ADDING MSE FRAMEWORK
-	friend_class OperatingModel;
+	//friend_class OperatingModel;
 
 
 INITIALIZATION_SECTION
@@ -357,7 +357,19 @@ FUNCTION runMSE
 	mv.lnq  = value(lnq);
 	mv.pyrs = 40;
 
-	OperatingModel om(mv,argc,argv);
+	mseData  md;
+	md.nyrs  = nyrs ;
+  md.alpha = alpha;
+  md.rho   = rho  ;
+  md.wk    = wk   ;
+  md.agek  = agek ;
+  md.year  = year ;
+  md.ct    = ct   ;
+  md.cpue  = cpue ;
+  md.wt    = wt   ;
+
+
+	OperatingModel om(md,mv,argc,argv);
 	om.runOM();
 
 FINAL_SECTION

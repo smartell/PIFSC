@@ -16,6 +16,8 @@ struct mseVariables
 	dvector ft;
 };
 
+// A struct is sort of like an R-list, you can pass a whole
+// struct just like you would pass a list argument.
 struct mseData
 {
 	int nyrs;
@@ -24,10 +26,10 @@ struct mseData
 	double wk;
 	int agek;
 
-	ivector year(1,nyrs);
-	dvector ct(1,nyrs);
-	dvector cpue(1,nyrs);
-	dvector wt(1,nyrs);
+	ivector year;
+	dvector ct;
+	dvector cpue;
+	dvector wt;
 };
 
 
@@ -35,8 +37,20 @@ class OperatingModel  //: public model_data
 {
 private:
 	
-	mseVariables m_mv;
+	mseVariables m_mv; // model variable for condition and running om.
+	mseData m_md;      // model data for conditioning the om.
 	int pyrs;
+
+	int nyrs;
+	double alpha;
+	double rho;
+	double wk;
+	int agek;
+
+	ivector year;
+	dvector ct;
+	dvector cpue;
+	dvector wt;
 
 	double bo;
 	double reck;
@@ -62,7 +76,7 @@ private:
 	dvector refWt;
 
 public:
-	OperatingModel(mseVariables _mv,int argc,char * argv[]);
+	OperatingModel(mseData _md, mseVariables _mv,int argc,char * argv[]);
 	~OperatingModel();
 	
 	void runOM();
