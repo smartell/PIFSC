@@ -102,13 +102,14 @@ void OperatingModel::populationModel()
 				f = 0.8;
 			cout<<"year "<<i<<" f = "<<f<<endl;
 			if (f > 1) exit(1);
+
+
 			refCt(i) = tac; //add error here.
 
 			// observation model
-			refYt(i) = exp(lnq+log(bt(i)));
-			// COUT(refYt)
+			refYt(i) = exp(lnq+log(bt(i))); //add error here.
 
-			refWt(i) = bt(i) / nt(i);
+			refWt(i) = bt(i) / nt(i); //add error here.
 
 			writeDataFile(i);
 

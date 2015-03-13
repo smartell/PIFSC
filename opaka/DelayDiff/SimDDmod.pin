@@ -1,0 +1,25 @@
+# Number of parameters = 64  Objective function value = -98.2707  Maximum gradient component = 7.57963e-05
+# log_bo:
+0.5
+# log_reck:
+2.484907
+# log_m:
+-1.609438
+# log_sigma_epsilon:
+-1.609438
+# log_sigma_nu:
+-2.995732
+# log_sigma_delta:
+-4.60517
+# log_tau
+-2.995732
+# log_fbar:
+-1.203973
+# psi:
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+# fdev:
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
