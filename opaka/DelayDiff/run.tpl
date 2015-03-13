@@ -13,7 +13,7 @@ PROCEDURE_SECTION
 FUNCTION runfun
 	for(int i=1;i<=20;i++)
 	{
-		system("./DDmod");
+		system("./DDmod -sim " + str(i) );
 		
 	}
 
