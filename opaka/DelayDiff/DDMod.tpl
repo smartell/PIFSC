@@ -47,9 +47,10 @@ INITIALIZATION_SECTION
 	log_bo   3.65;
 	log_reck 2.48;
 	log_m   -1.60;
-	log_sigma_epsilon  -1.60;
+	log_sigma_epsilon  -2.60;
 	log_sigma_nu       -2.20;
-	log_sigma_delta    -2.20;
+	log_sigma_delta    -4.60;
+	log_tau            -1.60;
 	log_fbar           -1.60;
 	
 
@@ -59,8 +60,8 @@ PARAMETER_SECTION
 	init_number log_reck;
 	init_number log_m;
 	init_number log_sigma_epsilon(2);
-	init_number log_sigma_nu(-2);
-	init_number log_sigma_delta(-2);
+	init_number log_sigma_nu(4);
+	init_number log_sigma_delta(5);
 	init_number log_tau(3);
 	init_number log_fbar(3);
 	
@@ -94,7 +95,7 @@ PARAMETER_SECTION
 	vector delta(1,nyrs);
 	vector epsilon(1,nyrs);
 
-	vector prior_vec(1,4);
+	vector prior_vec(1,8);
 
 	
 
@@ -144,11 +145,13 @@ FUNCTION runSimulationModel
 	dvector repsilon(1,nyrs);
 	dvector rnu(1,nyrs);
 	dvector rdelta(1,nyrs);
+	dvector rpsi(1,nyrs);
 
 	// fill with random normal deviates, mean =0, sd = 1
 	repsilon.fill_randn(rng);
 	rnu.fill_randn(rng);
 	rdelta.fill_randn(rng);
+	rpsi.fill_randn(rng);
 
 	//COUT(repsilon);
 
@@ -159,9 +162,10 @@ FUNCTION runSimulationModel
 	observationModels();
 
 	// overwrite existing data with simulated values.
-	ct   = value(elem_prod( chat,exp(0.05*rdelta) )) ;
+	ct   = value(elem_prod( chat,exp(sigma_delta*rdelta) )) ;
 	cpue = value(elem_prod( exp(lnq)*bt,exp(sigma_epsilon*repsilon) ));
 	wt   = value(what+sigma_nu*rnu);
+	psi  = value(tau)*rpsi;
 	
 	
 
@@ -172,10 +176,10 @@ FUNCTION initialStates
 	bo   = mfexp(log_bo);
 	reck = mfexp(log_reck) + 1.0;
 	m    = mfexp(log_m);
-	sigma_nu      = mfexp(log_sigma_nu);
-	sigma_epsilon = mfexp(log_sigma_epsilon);
-	sigma_delta   = mfexp(log_sigma_delta);
-	tau           = mfexp(log_tau);
+	sigma_nu      = 1.0 / mfexp(log_sigma_nu);
+	sigma_epsilon = 1.0 / mfexp(log_sigma_epsilon);
+	sigma_delta   = 1.0 / mfexp(log_sigma_delta);
+	tau           = 1.0 / mfexp(log_tau);
 	//wk   = mfexp(log_wk);
 
 	dvariable s    = exp(-m);
@@ -191,10 +195,14 @@ FUNCTION calcFishingMortality
 
 FUNCTION populationDynamics
 	// add option for starting off an fished state.
-	
-	bt(1) = bo;
-	nt(1) = no;
-	rt(1,agek) = ro * exp(psi(1,agek));
+	dvariable s  = exp(-m-ft(1));
+	dvariable we = (s*alpha+wk*(1.-s))/(1-rho*s);
+	dvariable be = -(we*(wk*so-1.)+s*(alpha+rho*we))/(beta*(s*alpha+s*rho*we-we));
+	// Be = -(We*(wk*so-1.)+t2*(alpha+rho*We))/(beta*(t2*alpha+t2*rho*We-We));
+
+	bt(1) = be;
+	nt(1) = be/we;
+	rt(1,agek) = be*(1-s)/we * exp(psi(1,agek));
 
 	int i;
 	for( i = 1; i < nyrs; i++ )
@@ -239,6 +247,11 @@ FUNCTION calculatePriors
 	prior_vec(2) = dbeta((h-0.2)/0.8,3.0,2.0);
 	prior_vec(3) = dlnorm(m,log(0.2),0.05);
 
+	prior_vec(4) = dgamma(1.0/square(sigma_epsilon),1.01,1.01);
+	prior_vec(5) = dgamma(1.0/square(sigma_nu),5.01,0.31);
+	prior_vec(6) = dgamma(1.0/square(sigma_delta),1.01,1.01);
+	prior_vec(7) = dgamma(1.0/square(tau),1.01,1.01);
+
 
 
 FUNCTION calcObjectiveFunction
@@ -281,6 +294,10 @@ REPORT_SECTION
 	REPORT(wk);
 	REPORT(ro);
 	REPORT(no);
+	REPORT(tau);
+	REPORT(sigma_epsilon);
+	REPORT(sigma_nu);
+	REPORT(sigma_delta);
 	REPORT(year);
 	REPORT(bt);
 	REPORT(nt);
@@ -293,6 +310,7 @@ REPORT_SECTION
 	REPORT(nu);
 	REPORT(delta);
 	REPORT(cpue);
+	REPORT(psi);
 	dvector yt = value(exp(lnq)*bt);
 	REPORT(yt);
 	REPORT(ct);
