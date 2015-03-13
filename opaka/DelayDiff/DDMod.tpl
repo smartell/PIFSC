@@ -49,6 +49,7 @@ INITIALIZATION_SECTION
 	log_m   -1.60;
 	log_sigma_epsilon  -1.60;
 	log_sigma_nu       -2.20;
+	log_sigma_delta    -2.20;
 	log_fbar           -1.60;
 	
 
@@ -59,8 +60,11 @@ PARAMETER_SECTION
 	init_number log_m;
 	init_number log_sigma_epsilon(2);
 	init_number log_sigma_nu(-2);
+	init_number log_sigma_delta(-2);
+	init_number log_tau(3);
 	init_number log_fbar(3);
-	//init_number log_wk;
+	
+	init_bounded_dev_vector psi(1,nyrs,-5,5,3);
 	init_bounded_dev_vector fdev(1,nyrs,-5,5);
 
 	objective_function_value f;
@@ -72,6 +76,8 @@ PARAMETER_SECTION
 	number m;
 	number sigma_epsilon;
 	number sigma_nu;
+	number sigma_delta;
+	number tau;
 
 	number so;
 	number beta;
@@ -168,6 +174,8 @@ FUNCTION initialStates
 	m    = mfexp(log_m);
 	sigma_nu      = mfexp(log_sigma_nu);
 	sigma_epsilon = mfexp(log_sigma_epsilon);
+	sigma_delta   = mfexp(log_sigma_delta);
+	tau           = mfexp(log_tau);
 	//wk   = mfexp(log_wk);
 
 	dvariable s    = exp(-m);
@@ -186,7 +194,7 @@ FUNCTION populationDynamics
 	
 	bt(1) = bo;
 	nt(1) = no;
-	rt(1,agek) = ro;
+	rt(1,agek) = ro * exp(psi(1,agek));
 
 	int i;
 	for( i = 1; i < nyrs; i++ )
@@ -197,7 +205,7 @@ FUNCTION populationDynamics
 		nt(i+1) = st(i)*nt(i) + rt(i);
 		if(i+agek <= nyrs)
 		{
-			rt(i+agek) = so*bt(i)/(1.+beta*bt(i));
+			rt(i+agek) = so*bt(i)/(1.+beta*bt(i)) * exp(psi(i));
 		}
 	}
 	// COUT(bt);
@@ -234,12 +242,13 @@ FUNCTION calculatePriors
 
 
 FUNCTION calcObjectiveFunction
-	dvar_vector lvec(1,3);
+	dvar_vector lvec(1,4);
 	
 
 	lvec(1) = dnorm(nu,sigma_nu);
 	lvec(2) = dnorm(epsilon,sigma_epsilon);
-	lvec(3) = dnorm(delta,0.2);
+	lvec(3) = dnorm(delta,sigma_delta);
+	lvec(4) = dnorm(psi,tau);
 	f = sum(lvec) + sum(prior_vec);
 
 	dvariable avgF = mean(ft);
