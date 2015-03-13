@@ -361,7 +361,7 @@ FUNCTION runMSE
 	om.runOM();
 
 FINAL_SECTION
-	system("cp DDmod.rep ./saveRuns/DDmod.rep");
+	//system("cp DDmod.rep ./saveRuns/DDmod.rep");
 	if(mseed !=0)	runMSE();
 
 GLOBALS_SECTION

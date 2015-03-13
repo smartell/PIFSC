@@ -16,8 +16,22 @@ struct mseVariables
 	dvector ft;
 };
 
+struct mseData
+{
+	int nyrs;
+	double alpha;
+	double rho;
+	double wk;
+	int agek;
 
-class OperatingModel: public model_data
+	ivector year(1,nyrs);
+	dvector ct(1,nyrs);
+	dvector cpue(1,nyrs);
+	dvector wt(1,nyrs);
+};
+
+
+class OperatingModel  //: public model_data
 {
 private:
 	
