@@ -7,7 +7,7 @@
 OperatingModel::~OperatingModel(){}
 
 OperatingModel::OperatingModel(mseData _md, mseVariables _mv,int argc,char * argv[])
-: model_data(argc,argv), m_mv(_mv), m_md(_md)
+: m_mv(_mv), m_md(_md)
 {
 	pyrs = m_mv.pyrs;
 	bo   = m_mv.bo;
