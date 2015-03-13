@@ -290,6 +290,9 @@ REPORT_SECTION
 	}
 
 
+FINAL_SECTION
+	system("cp DDmod.rep ./saveRuns/DDmod.rep");
+
 
 GLOBALS_SECTION
 	//#include "stats.cxx"
