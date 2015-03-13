@@ -6,6 +6,7 @@ DATA_SECTION
 
 
 	int rseed;
+	int mseed;
 	LOC_CALCS
 		// Command line options.
 		rseed = 0;
@@ -14,6 +15,13 @@ DATA_SECTION
 		{
 			rseed = atoi(ad_comm::argv[on+1]);
 		}
+
+		mseed = 0;
+		if((on=option_match(ad_comm::argc,ad_comm::argv,"-mse",opt))>-1)
+		{
+			mseed = atoi(ad_comm::argv[on+1]);
+		}
+
 	END_CALCS
 
 
@@ -175,7 +183,7 @@ FUNCTION runSimulationModel
 
 FUNCTION initialStates
 	bo   = mfexp(log_bo);
-	reck = mfexp(log_reck) + 1.0;
+	reck = mfexp(log_reck) + 1.001;
 	m    = mfexp(log_m);
 	sigma_nu      = 1.0 / mfexp(log_sigma_nu);
 	sigma_epsilon = 1.0 / mfexp(log_sigma_epsilon);
@@ -244,14 +252,10 @@ FUNCTION observationModels
 FUNCTION calculatePriors
 	prior_vec.initialize();
 
-	sigma_nu      = 1.0 / mfexp(log_sigma_nu);
-	sigma_epsilon = 1.0 / mfexp(log_sigma_epsilon);
-	sigma_delta   = 1.0 / mfexp(log_sigma_delta);
-	tau           = 1.0 / mfexp(log_tau);
-
-	prior_vec(1) = dlnorm(bo,3.65,0.2);
-	dvariable h  = reck/(4.+reck);
-	prior_vec(2) = dbeta((h-0.2)/0.8,3.0,2.0);
+	prior_vec(1) = dlnorm(bo,1.65,0.2);
+	//dvariable h  = reck/(4.+reck);
+	//prior_vec(2) = dbeta((h-0.2)/0.8,8.0,3.0);
+	prior_vec(2) = dlnorm(reck,log(12),0.2);
 	prior_vec(3) = dlnorm(m,log(0.2),0.05);
 
 	prior_vec(4) = dgamma(1.0/square(sigma_epsilon),1.01,1.01);
@@ -333,13 +337,32 @@ REPORT_SECTION
 		ofs<<rseed<<tt<<bo<<tt<<reck<<tt<<m<<tt<<sigma_epsilon<<tt<<sigma_nu<<endl;
 	}
 
+	// report results for mse model
+	if ( mseed == 0 && last_phase() )
+	{
+		ofstream ofs("ddmod.res");
+		ofs<<bo<<endl;
+		ofs<<bt(nyrs)<<endl;
+
+	}
+
 FUNCTION runMSE
 	cout<<"Running Management Strategy Evaluation"<<endl;
-	OperatingModel om(argc,argv);
+	mseVariables   mv;
+	mv.bo   = value(bo);
+	mv.reck = value(reck);
+	mv.m    = value(m);
+	mv.psi  = value(psi);
+	mv.ft   = value(ft);
+	mv.lnq  = value(lnq);
+	mv.pyrs = 40;
+
+	OperatingModel om(mv,argc,argv);
+	om.runOM();
 
 FINAL_SECTION
 	system("cp DDmod.rep ./saveRuns/DDmod.rep");
-	runMSE();
+	if(mseed !=0)	runMSE();
 
 GLOBALS_SECTION
 	//#include "stats.cxx"
