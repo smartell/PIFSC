@@ -39,3 +39,14 @@ ssdf <- mdf %>% subset(variable %in% c("epsilon","nu","delta","fdev"))
 p <- ggplot(ssdf,aes(year,value)) + geom_point() 
 p <- p + facet_wrap(~variable)
 print(p + theme_bw())
+
+runSim<- function(n=10)
+{
+        system("rm SimPars.rep")
+        for(iter in 1:n)
+        {
+                arg = paste("./DDMod -nox -est -sim",iter)
+                system(arg);
+        }
+}
+
