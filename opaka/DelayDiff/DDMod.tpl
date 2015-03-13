@@ -6,6 +6,7 @@ DATA_SECTION
 
 
 	int rseed;
+	int mseed;
 	LOC_CALCS
 		// Command line options.
 		rseed = 0;
@@ -14,6 +15,13 @@ DATA_SECTION
 		{
 			rseed = atoi(ad_comm::argv[on+1]);
 		}
+
+		mseed = 0;
+		if((on=option_match(ad_comm::argc,ad_comm::argv,"-mse",opt))>-1)
+		{
+			mseed = atoi(ad_comm::argv[on+1]);
+		}
+
 	END_CALCS
 
 
@@ -242,7 +250,7 @@ FUNCTION observationModels
 FUNCTION calculatePriors
 	prior_vec.initialize();
 
-	prior_vec(1) = dlnorm(bo,3.65,0.2);
+	prior_vec(1) = dlnorm(bo,1.65,0.2);
 	dvariable h  = reck/(4.+reck);
 	prior_vec(2) = dbeta((h-0.2)/0.8,3.0,2.0);
 	prior_vec(3) = dlnorm(m,log(0.2),0.05);
@@ -323,13 +331,32 @@ REPORT_SECTION
 		ofs<<rseed<<tt<<bo<<tt<<reck<<tt<<m<<tt<<sigma_epsilon<<tt<<sigma_nu<<endl;
 	}
 
+	// report results for mse model
+	if ( mseed != 0 && last_phase() )
+	{
+		ofstream ofs("ddmod.res");
+		ofs<<bo<<endl;
+		ofs<<bt(nyrs)<<endl;
+
+	}
+
 FUNCTION runMSE
 	cout<<"Running Management Strategy Evaluation"<<endl;
-	OperatingModel om(argc,argv);
+	mseVariables   mv;
+	mv.bo   = value(bo);
+	mv.reck = value(reck);
+	mv.m    = value(m);
+	mv.psi  = value(psi);
+	mv.ft   = value(ft);
+	mv.lnq  = value(lnq);
+	mv.pyrs = 10;
+
+	OperatingModel om(mv,argc,argv);
+	om.runOM();
 
 FINAL_SECTION
 	system("cp DDmod.rep ./saveRuns/DDmod.rep");
-	runMSE();
+	if(mseed !=0)	runMSE();
 
 GLOBALS_SECTION
 	//#include "stats.cxx"
