@@ -1,5 +1,6 @@
 EXEC=DDmod
 DATA=DDmod.dat
+CPPS=OperatingModel.cpp
 ARGS=
 #RSCRIP FOR AUTMATING GRAPHS
 RSCRIPT='source(file.path("DDmod.R"))'
@@ -7,7 +8,7 @@ RSCRIPT='source(file.path("DDmod.R"))'
 all: $(EXEC) run plots
 
 $(EXEC): $(EXEC).tpl
-	admb $(EXEC).tpl
+	admb $(EXEC).tpl $(CPPS)
 
 run: $(EXEC).cpp
 	./$(EXEC) -ind $(DATA) $(ARGS)

@@ -38,6 +38,10 @@ DATA_SECTION
 		cpue = column(data,3);
 		wt   = column(data,4);
 	END_CALCS
+	
+	// ADDING MSE FRAMEWORK
+	friend_class OperatingModel;
+
 
 INITIALIZATION_SECTION
 	log_bo   3.65;
@@ -85,6 +89,9 @@ PARAMETER_SECTION
 	vector epsilon(1,nyrs);
 
 	vector prior_vec(1,4);
+
+	
+
 
 PRELIMINARY_CALCS_SECTION
 	if(rseed != 0)
@@ -289,14 +296,17 @@ REPORT_SECTION
 		ofs<<rseed<<tt<<bo<<tt<<reck<<tt<<m<<tt<<sigma_epsilon<<tt<<sigma_nu<<endl;
 	}
 
+FUNCTION runMSE
+	cout<<"Running Management Strategy Evaluation"<<endl;
+	OperatingModel om(argc,argv);
 
 FINAL_SECTION
 	system("cp DDmod.rep ./saveRuns/DDmod.rep");
-
+	runMSE();
 
 GLOBALS_SECTION
 	//#include "stats.cxx"
-
+	#include "OperatingModel.h"
 	#undef COUT
 	#define COUT(object) cout<<#object "\n"<<object<<endl;
 	#undef REPORT
