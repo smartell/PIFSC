@@ -1,7 +1,20 @@
 DATA_SECTION
+	init_adstring datafile;
+	!!COUT(datafile);
+	!! ad_comm::change_datafile_name(datafile);
 
-	// Command line options.
-	//if((on=option_match(ad_comm::argc,ad_comm::argv,"-sim",opt))>-1)
+
+
+	int rseed;
+	LOC_CALCS
+		// Command line options.
+		rseed = 0;
+		int on,opt;
+		if((on=option_match(ad_comm::argc,ad_comm::argv,"-sim",opt))>-1)
+		{
+			rseed = atoi(ad_comm::argv[on+1]);
+		}
+	END_CALCS
 
 
 
@@ -25,28 +38,34 @@ DATA_SECTION
 		cpue = column(data,3);
 		wt   = column(data,4);
 	END_CALCS
+	
+	// ADDING MSE FRAMEWORK
+	friend_class OperatingModel;
+
 
 INITIALIZATION_SECTION
-	log_bo   30.65;
+	log_bo   3.65;
 	log_reck 2.48;
 	log_m   -1.60;
-	log_sigma_epsilon   1.60;
-	log_sigma_nu        2.40;
-	log_sigma_delta     3.00;
+	log_sigma_epsilon  -2.60;
+	log_sigma_nu       -2.20;
+	log_sigma_delta    -4.60;
+	log_tau            -1.60;
 	log_fbar           -1.60;
 	log_tau            -1.60;
 	
 
 
 PARAMETER_SECTION
-	init_number log_bo(1);
-	init_number log_reck(2);
-	init_number log_m(1);
-	init_number log_sigma_epsilon(3);
-	init_number log_sigma_nu(-3);
-	init_number log_sigma_delta(3);
-	init_number log_tau(4);
-	init_number log_fbar(1);
+	init_number log_bo;
+	init_number log_reck;
+	init_number log_m;
+	init_number log_sigma_epsilon(2);
+	init_number log_sigma_nu(4);
+	init_number log_sigma_delta(5);
+	init_number log_tau(3);
+	init_number log_fbar(3);
+	
 	init_bounded_dev_vector psi(1,nyrs,-5,5,3);
 	init_bounded_dev_vector fdev(1,nyrs,-5,5);
 
@@ -77,9 +96,20 @@ PARAMETER_SECTION
 	vector delta(1,nyrs);
 	vector epsilon(1,nyrs);
 
-	vector prior_vec(1,7);
+	vector prior_vec(1,8);
 
-	sdreport_number sd_bterm;
+	
+
+
+PRELIMINARY_CALCS_SECTION
+	if(rseed != 0)
+	{
+		cout<<"Simulating fake data with random seed "<<rseed<<endl;
+		runSimulationModel();
+		//exit(1);
+	}
+
+
 PROCEDURE_SECTION
 
 	initialStates();
@@ -90,12 +120,68 @@ PROCEDURE_SECTION
 	calcObjectiveFunction();
 
 
+FUNCTION runSimulationModel
+	/**
+	This simulation model is based on the same routines used 
+	in the assessment model.  
+
+	Pseudocode:
+		- fill vectors with random normal deviates.
+		- call functions to calculate predicted observations
+		- add random error to the simulated observations
+		- continue with running the assessment and estimate
+		  model parameters.
+		- write estimated parameters to a file for comparison
+		  with the true values (pin file) that were used to 
+		  simulate the model data.
+
+
+
+	*/
+	
+	// Random number generator class
+	random_number_generator rng(rseed);
+
+	// vectors for random numbers must be data types, not dvar_...
+	dvector repsilon(1,nyrs);
+	dvector rnu(1,nyrs);
+	dvector rdelta(1,nyrs);
+	dvector rpsi(1,nyrs);
+
+	// fill with random normal deviates, mean =0, sd = 1
+	repsilon.fill_randn(rng);
+	rnu.fill_randn(rng);
+	rdelta.fill_randn(rng);
+	rpsi.fill_randn(rng);
+
+	//COUT(repsilon);
+
+	// call functions to simulate data.
+	initialStates();
+	calcFishingMortality();
+	populationDynamics();
+	observationModels();
+
+	// overwrite existing data with simulated values.
+	ct   = value(elem_prod( chat,exp(sigma_delta*rdelta) )) ;
+	cpue = value(elem_prod( exp(lnq)*bt,exp(sigma_epsilon*repsilon) ));
+	wt   = value(what+sigma_nu*rnu);
+	psi  = value(tau)*rpsi;
+	
+	
+
+
+
 
 FUNCTION initialStates
 	bo   = mfexp(log_bo);
 	reck = mfexp(log_reck) + 1.0;
 	m    = mfexp(log_m);
-	
+	sigma_nu      = 1.0 / mfexp(log_sigma_nu);
+	sigma_epsilon = 1.0 / mfexp(log_sigma_epsilon);
+	sigma_delta   = 1.0 / mfexp(log_sigma_delta);
+	tau           = 1.0 / mfexp(log_tau);
+	//wk   = mfexp(log_wk);
 
 	dvariable s    = exp(-m);
 	dvariable wbar = (s*alpha+wk*(1.-s))/(1-rho*s);
@@ -110,10 +196,14 @@ FUNCTION calcFishingMortality
 
 FUNCTION populationDynamics
 	// add option for starting off an fished state.
-	
-	bt(1) = bo;
-	nt(1) = no;
-	rt(1,agek) = ro *exp(psi(1,agek));
+	dvariable s  = exp(-m-ft(1));
+	dvariable we = (s*alpha+wk*(1.-s))/(1-rho*s);
+	dvariable be = -(we*(wk*so-1.)+s*(alpha+rho*we))/(beta*(s*alpha+s*rho*we-we));
+	// Be = -(We*(wk*so-1.)+t2*(alpha+rho*We))/(beta*(t2*alpha+t2*rho*We-We));
+
+	bt(1) = be;
+	nt(1) = be/we;
+	rt(1,agek) = be*(1-s)/we * exp(psi(1,agek));
 
 	int i;
 	for( i = 1; i < nyrs; i++ )
@@ -124,7 +214,7 @@ FUNCTION populationDynamics
 		nt(i+1) = st(i)*nt(i) + rt(i);
 		if(i+agek <= nyrs)
 		{
-			rt(i+agek) = so*bt(i)/(1.+beta*bt(i))*exp(psi(i));
+			rt(i+agek) = so*bt(i)/(1.+beta*bt(i)) * exp(psi(i));
 		}
 	}
 	sd_bterm = bt(nyrs);
@@ -164,13 +254,12 @@ FUNCTION calculatePriors
 	prior_vec(2) = dbeta((h-0.2)/0.8,3.0,2.0);
 	prior_vec(3) = dlnorm(m,log(0.2),0.05);
 
-	prior_vec(4) = dgamma(1.0/square(sigma_nu),30.,1.0);
-	prior_vec(5) = dgamma(1.0/square(sigma_epsilon),25.,1.0);
-	prior_vec(6) = dgamma(1.0/square(sigma_delta),30.,1.0);
-	prior_vec(7) = dgamma(1.0/square(tau),20.0,1.0);
+	prior_vec(4) = dgamma(1.0/square(sigma_epsilon),1.01,1.01);
+	prior_vec(5) = dgamma(1.0/square(sigma_nu),5.01,0.31);
+	prior_vec(6) = dgamma(1.0/square(sigma_delta),1.01,1.01);
+	prior_vec(7) = dgamma(1.0/square(tau),1.01,1.01);
 
-	//COUT(dgamma(25,1.01,1.01));
-	//exit(1);
+
 
 FUNCTION calcObjectiveFunction
 	dvar_vector lvec(1,4);
@@ -214,6 +303,7 @@ REPORT_SECTION
 	REPORT(wk);
 	REPORT(ro);
 	REPORT(no);
+	REPORT(tau);
 	REPORT(sigma_epsilon);
 	REPORT(sigma_nu);
 	REPORT(sigma_delta);
@@ -229,14 +319,31 @@ REPORT_SECTION
 	REPORT(nu);
 	REPORT(delta);
 	REPORT(cpue);
+	REPORT(psi);
 	dvector yt = value(exp(lnq)*bt);
 	REPORT(yt);
 	REPORT(ct);
 	REPORT(chat);
 	REPORT(psi);
 
+	if ( rseed != 0 && last_phase() )
+	{
+		ofstream ofs("SimPars.rep",ios::app);
+		adstring tt = "\t";
+		ofs<<rseed<<tt<<bo<<tt<<reck<<tt<<m<<tt<<sigma_epsilon<<tt<<sigma_nu<<endl;
+	}
+
+FUNCTION runMSE
+	cout<<"Running Management Strategy Evaluation"<<endl;
+	OperatingModel om(argc,argv);
+
+FINAL_SECTION
+	system("cp DDmod.rep ./saveRuns/DDmod.rep");
+	runMSE();
 
 GLOBALS_SECTION
+	//#include "stats.cxx"
+	#include "OperatingModel.h"
 	#undef COUT
 	#define COUT(object) cout<<#object "\n"<<object<<endl;
 	#undef REPORT
