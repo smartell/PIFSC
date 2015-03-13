@@ -80,7 +80,12 @@ void OperatingModel::populationModel()
 			double tac = getTAC();
 
 			// implement fishery 
-			f = tac / bt(i);
+			if(tac < bt(i))
+				f = tac / bt(i);
+			else
+				f = 0.8;
+			cout<<"year "<<i<<" f = "<<f<<endl;
+			if (f > 1) exit(1);
 			refCt(i) = tac; //add error here.
 
 			// observation model
@@ -92,7 +97,7 @@ void OperatingModel::populationModel()
 			writeDataFile(i);
 
 			runAssessment();
-			COUT(i);
+			
 		}
 
 
@@ -104,6 +109,10 @@ void OperatingModel::populationModel()
 		{
 			rt(i+agek) = so*bt(i)/(1.+beta*bt(i)) * exp(psi(i));
 		}
+		if(i+agek > nyrs && i+agek <= nyrs+pyrs)
+		{
+			rt(i+agek) = so*bt(i)/(1.+beta*bt(i));
+		}
 	}
 	
 }
@@ -111,8 +120,9 @@ void OperatingModel::populationModel()
 void OperatingModel::runAssessment()
 {
 	#if defined __APPLE__ || defined __linux
-  	system("./DDmod -ind mseRUN.dat -nox > /dev/null 2>&1");
-  	// system("./DDmod -ind RunMSE.dat -nox -est ");
+  	// system("./DDmod -ind RunMSE.dat -nox > /dev/null 2>&1");
+  	// system("./DDmod -ind RunMSE.dat -nox > /dev/null");
+  	system("./DDmod -ind RunMSE.dat -nox -est ");
   #endif
 
   #if defined _WIN32 || defined _WIN64

@@ -182,7 +182,7 @@ FUNCTION runSimulationModel
 
 FUNCTION initialStates
 	bo   = mfexp(log_bo);
-	reck = mfexp(log_reck) + 1.0;
+	reck = mfexp(log_reck) + 1.001;
 	m    = mfexp(log_m);
 	sigma_nu      = 1.0 / mfexp(log_sigma_nu);
 	sigma_epsilon = 1.0 / mfexp(log_sigma_epsilon);
@@ -251,8 +251,9 @@ FUNCTION calculatePriors
 	prior_vec.initialize();
 
 	prior_vec(1) = dlnorm(bo,1.65,0.2);
-	dvariable h  = reck/(4.+reck);
-	prior_vec(2) = dbeta((h-0.2)/0.8,3.0,2.0);
+	//dvariable h  = reck/(4.+reck);
+	//prior_vec(2) = dbeta((h-0.2)/0.8,8.0,3.0);
+	prior_vec(2) = dlnorm(reck,log(12),0.2);
 	prior_vec(3) = dlnorm(m,log(0.2),0.05);
 
 	prior_vec(4) = dgamma(1.0/square(sigma_epsilon),1.01,1.01);
@@ -332,7 +333,7 @@ REPORT_SECTION
 	}
 
 	// report results for mse model
-	if ( mseed != 0 && last_phase() )
+	if ( mseed == 0 && last_phase() )
 	{
 		ofstream ofs("ddmod.res");
 		ofs<<bo<<endl;
@@ -349,7 +350,7 @@ FUNCTION runMSE
 	mv.psi  = value(psi);
 	mv.ft   = value(ft);
 	mv.lnq  = value(lnq);
-	mv.pyrs = 10;
+	mv.pyrs = 40;
 
 	OperatingModel om(mv,argc,argv);
 	om.runOM();

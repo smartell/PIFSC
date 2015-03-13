@@ -31,7 +31,3 @@ plots: $(EXEC).rep
 
 
 
-
-# target: help - Display callable targets.
-help:
-	egrep "^# target:" [Mm]akefile
