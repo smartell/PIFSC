@@ -29,5 +29,11 @@ clean:
 plots: $(EXEC).rep
 	-@echo $(RSCRIPT) | R --vanilla --slave
 
+data: $(msedirs)
+	@echo MSE directories created.
+
+simdirs := $(shell echo 'cat(formatC(1:$(NOSIM), digits=3, flag="0"))' | R --vanilla --slave)
+msedirs := $(foreach a, $(S), $(foreach b, $(P), $(addprefix mse_$(a)_$(b)/, $(simdirs))))
+
 
 

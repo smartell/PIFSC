@@ -49,7 +49,15 @@ DATA_SECTION
 	
 	// ADDING MSE FRAMEWORK
 	//friend_class OperatingModel;
-
+	//!! ad_comm::change_datafile_name("junk.dat");
+	//init_int ngear;
+	//init_ivector nrow(1,ngear);
+	//init_ivector ncol(1,ngear);
+	//init_3darray junk(1,ngear,1,nrow,1,ncol);
+//
+//	//epsilon(iyr) = cpue - biomass(iyr);
+//	//!! COUT( trans(junk(2))(2) );
+	//!! exit(1);
 
 INITIALIZATION_SECTION
 	log_bo   3.65;
