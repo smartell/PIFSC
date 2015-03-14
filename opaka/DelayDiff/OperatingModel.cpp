@@ -46,10 +46,18 @@ OperatingModel::OperatingModel(mseData _md, mseVariables _mv,int argc,char * arg
 	refCt.allocate(1,nyrs+pyrs);
 	refYt.allocate(1,nyrs+pyrs);
 	refWt.allocate(1,nyrs+pyrs);
+	refEpsilon.allocate(1,nyrs+pyrs);
+	refNu.allocate(1,nyrs+pyrs);
+	refPsi.allocate(1,nyrs+pyrs);
+	refDelta.allocate(1,nyrs+pyrs);
 
 	refCt.initialize();
 	refYt.initialize();
 	refWt.initialize();
+	refEpsilon.initialize();
+	refDelta.initialize();
+	refNu.initialize();
+	refPsi.initialize();
 
 	cout<<bo<<endl;
 	cout<<reck<<endl;
@@ -67,6 +75,15 @@ void OperatingModel::initModel()
 	beta = (reck-1.)/bo;
 }
 
+void OperatingModel::generateRandomVariables()
+{
+	random_number_generator rng(m_mseed);
+	refEpsilon.fill_randn(rng);
+	refNu.fill_randn(rng);
+	refDelta.fill_randn(rng);
+	refPsi.fill_randn(rng);
+}
+
 void OperatingModel::populationModel()
 {
 	double f;
@@ -74,6 +91,7 @@ void OperatingModel::populationModel()
 	double s  = exp(-m-fe);
 	double we = (s*alpha+wk*(1.-s))/(1-rho*s);
 	double be = -(we*(wk*so-1.)+s*(alpha+rho*we))/(beta*(s*alpha+s*rho*we-we));
+	
 	
 
 	bt(1) = be;
@@ -103,13 +121,13 @@ void OperatingModel::populationModel()
 			cout<<"year "<<i<<" f = "<<f<<endl;
 			if (f > 1) exit(1);
 
-
-			refCt(i) = tac; //add error here.
+			
+			refCt(i) = tac *exp(0.05*refDelta(i)); //add error here.
 
 			// observation model
-			refYt(i) = exp(lnq+log(bt(i))); //add error here.
+			refYt(i) = exp(lnq+log(bt(i)) + 0.2*refEpsilon(i)); //add error here.
 
-			refWt(i) = bt(i) / nt(i); //add error here.
+			refWt(i) = bt(i) / nt(i) + 0.05*refNu(i); //add error here.
 
 			writeDataFile(i);
 
@@ -128,7 +146,7 @@ void OperatingModel::populationModel()
 		}
 		if(i+agek > nyrs && i+agek <= nyrs+pyrs)
 		{
-			rt(i+agek) = so*bt(i)/(1.+beta*bt(i));
+			rt(i+agek) = so*bt(i)/(1.+beta*bt(i)) * exp(0.2*refPsi(i));
 		}
 	}
 	
@@ -149,7 +167,7 @@ void OperatingModel::runAssessment()
 
 double OperatingModel::getTAC()
 {
-	double tac = 0.2*estBt;
+	double tac = 0.5*estBt;
 	return tac;
 
 }
@@ -166,8 +184,18 @@ void OperatingModel::runOM()
 	cout<<"RUnning operating Model"<<endl;
 	initModel();
 	populationModel();
-
 }
+
+void OperatingModel::runOM(int mseed)
+{
+	m_mseed = mseed;
+	cout<<"Holy Crap this stuff is easy."<<endl;
+	initModel();
+	generateRandomVariables();
+	populationModel();
+	
+}
+
 
 void OperatingModel::writeDataFile(int &iyr)
 {

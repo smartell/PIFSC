@@ -41,6 +41,7 @@ private:
 	mseData m_md;      // model data for conditioning the om.
 	int pyrs;
 
+	int m_mseed;
 	int nyrs;
 	double alpha;
 	double rho;
@@ -74,13 +75,21 @@ private:
 	dvector refCt;
 	dvector refYt;
 	dvector refWt;
+	dvector refEpsilon;
+	dvector refNu;
+	dvector refPsi;
+	dvector refDelta;
+
+
 
 public:
 	OperatingModel(mseData _md, mseVariables _mv,int argc,char * argv[]);
 	~OperatingModel();
 	
 	void runOM();
+	void runOM(int mseed);
 	void initModel();
+	void generateRandomVariables();
 	void populationModel();
 	void getStockStatus();
 	void writeDataFile(int &iyr);

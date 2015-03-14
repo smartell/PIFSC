@@ -42,7 +42,7 @@ DATA_SECTION
 	
 	LOC_CALCS
 		year = ivector(column(data,1));
-		ct   = column(data,2)/1.0e6;
+		ct   = column(data,2);
 		cpue = column(data,3);
 		wt   = column(data,4);
 	END_CALCS
@@ -98,6 +98,7 @@ PARAMETER_SECTION
 	vector bt(1,nyrs);
 	vector nt(1,nyrs);
 	vector rt(1,nyrs);
+	vector qt(1,nyrs);
 	vector what(1,nyrs);
 	vector chat(1,nyrs);
 	vector nu(1,nyrs);
@@ -237,6 +238,17 @@ FUNCTION observationModels
 	dvar_vector zt = log(cpue) - log(bt);
 	lnq = mean(zt);
 	epsilon = zt - lnq;
+
+	// random walk in q for cpue.
+	//qt(1) = exp(zt(1));
+	//dvar_vector fd_zt = first_difference(zt);
+	//dvariable zwbar = mean(fd_zt);
+	//epsilon(1,nyrs-1) = fd_zt -zwbar;
+	//for(int i = 2; i <= nyrs; i++ )
+	//{
+	//	qt(i) = qt(i-1) * exp(fd_zt(i-1));
+	//}
+
 	// COUT(epsilon(1,5));
 	// COUT(log(cpue(1,5))-lnq+log(bt(1,5)));
 
@@ -324,6 +336,7 @@ REPORT_SECTION
 	REPORT(delta);
 	REPORT(cpue);
 	REPORT(psi);
+
 	dvector yt = value(exp(lnq)*bt);
 	REPORT(yt);
 	REPORT(ct);
@@ -370,7 +383,8 @@ FUNCTION runMSE
 
 
 	OperatingModel om(md,mv,argc,argv);
-	om.runOM();
+	//om.runOM();
+	om.runOM(mseed);
 
 FINAL_SECTION
 	//system("cp DDmod.rep ./saveRuns/DDmod.rep");
